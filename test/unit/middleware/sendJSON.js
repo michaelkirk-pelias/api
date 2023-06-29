@@ -1,6 +1,10 @@
-const es = require('elasticsearch');
+const es = require('@elastic/elasticsearch');
 const middleware = require('../../../middleware/sendJSON');
 const PeliasTimeoutError = require('../../../sanitizer/PeliasTimeoutError');
+
+/** @type {es.ApiResponse} */
+// @ts-ignore
+const fakeApiResponse = {};
 
 module.exports.tests = {};
 
@@ -102,7 +106,7 @@ module.exports.tests.generic_server_error = function(test, common) {
 module.exports.tests.generic_elasticsearch_error = function(test, common) {
   test('generic elasticsearch error', function(t) {
     var res = { body: { geocoding: {
-      errors: [ new es.errors.Generic('an error') ]
+      errors: [ new es.errors.ElasticsearchClientError('an error') ]
     }}};
 
     res.status = function( code ){
@@ -120,7 +124,7 @@ module.exports.tests.generic_elasticsearch_error = function(test, common) {
 module.exports.tests.request_timeout = function(test, common) {
   test('request timeout', function(t) {
     var res = { body: { geocoding: {
-      errors: [ new es.errors.RequestTimeout('an error') ]
+      errors: [ new es.errors.TimeoutError('an error', fakeApiResponse) ]
     }}};
 
     res.status = function( code ){
@@ -138,7 +142,7 @@ module.exports.tests.request_timeout = function(test, common) {
 module.exports.tests.no_connections = function(test, common) {
   test('no connections', function(t) {
     var res = { body: { geocoding: {
-      errors: [ new es.errors.NoConnections('an error') ]
+      errors: [ new es.errors.NoLivingConnectionsError('an error', fakeApiResponse) ]
     }}};
 
     res.status = function( code ){
@@ -156,7 +160,7 @@ module.exports.tests.no_connections = function(test, common) {
 module.exports.tests.connection_fault = function(test, common) {
   test('connection fault', function(t) {
     var res = { body: { geocoding: {
-      errors: [ new es.errors.ConnectionFault('an error') ]
+      errors: [ new es.errors.ConnectionError('an error', fakeApiResponse) ]
     }}};
 
     res.status = function( code ){
@@ -174,7 +178,7 @@ module.exports.tests.connection_fault = function(test, common) {
 module.exports.tests.serialization = function(test, common) {
   test('serialization', function(t) {
     var res = { body: { geocoding: {
-      errors: [ new es.errors.Serialization('an error') ]
+      errors: [ new es.errors.SerializationError('an error', {}) ]
     }}};
 
     res.status = function( code ){

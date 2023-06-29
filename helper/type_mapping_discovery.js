@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const elasticsearch = require('elasticsearch');
+const buildClient = require('pelias-elasticsearch');
 const peliasConfig = require('pelias-config').generate();
 const logger = require('pelias-logger').get('api:type_mapping_discovery');
 
@@ -35,13 +35,13 @@ const DISCOVERY_QUERY = {
 };
 
 module.exports = (tm, done) => {
-  const esclient = elasticsearch.Client(_.extend({}, peliasConfig.esclient));
-  esclient.search(DISCOVERY_QUERY, (err, res) => {
+    const esclient = buildClient(_.extend({}, peliasConfig.esclient));
+    esclient.search(DISCOVERY_QUERY, (err, { body }) => {
 
     // keep tally of hit counts - compatible with new/old versions of ES
     let totalHits = 0;
-    if( _.has(res, 'hits.total') ) {
-      totalHits =  _.isPlainObject(res.hits.total) ? res.hits.total.value : res.hits.total;
+    if( _.has(body, 'hits.total') ) {
+      totalHits =  _.isPlainObject(body.hits.total) ? body.hits.total.value : body.hits.total;
     }
 
     // query error
@@ -63,7 +63,7 @@ module.exports = (tm, done) => {
 
       // generate a layers_by_source mapping from the aggregation
       let layersBySource = {};
-      let sources = _.get(res, 'aggregations.sources.buckets', []);
+      let sources = _.get(body, 'aggregations.sources.buckets', []);
       sources.forEach( source => {
         let layers = _.get(source, 'layers.buckets', []);
         layers.forEach( layer => logger.debug( `${source.key} > ${layer.key}`, `= ${layer.doc_count}` ) );

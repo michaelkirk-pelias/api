@@ -4,7 +4,7 @@ const requireAll = require('require-all');
 const express = require('express');
 const { Router } = express;
 const sorting = require('pelias-sorting');
-const elasticsearch = require('elasticsearch');
+const buildClient = require('pelias-elasticsearch');
 const {all, any, not} = require('predicates');
 
 // imports
@@ -31,7 +31,7 @@ const configuration = requireAll(path.join(__dirname, '../service/configurations
  * @param {object} peliasConfig
  */
 function addRoutes(app, peliasConfig) {
-  const esclient = elasticsearch.Client(_.extend({}, peliasConfig.esclient));
+  const esclient = buildClient(_.extend({}, peliasConfig.esclient));
 
   const pipConfiguration = new configuration.PointInPolygon(_.defaultTo(peliasConfig.api.services.pip, {}));
   const pipService = serviceWrapper(pipConfiguration);

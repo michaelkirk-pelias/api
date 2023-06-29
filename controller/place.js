@@ -14,6 +14,10 @@ function isRequestTimeout(err) {
   return _.get(err, 'status') === 408;
 }
 
+/**
+ * @param {*} apiConfig 
+ * @param {import('@elastic/elasticsearch').Client} esclient 
+ */
 function setup( apiConfig, esclient ){
   function controller( req, res, next ){
     // do not run controller when a request validation error has occurred.
@@ -47,12 +51,12 @@ function setup( apiConfig, esclient ){
     operation.attempt((currentAttempt) => {
       const initialTime = debugLog.beginTimer(req);
 
-      mgetService( esclient, cmd, function( err, docs, data) {
+      mgetService( esclient, cmd, function( err, docs, esRes ) {
         const message = {
           controller: 'place',
           queryType: 'place',
-          result_count: _.get(data, 'docs.length'),
-          response_time: _.get(data, 'response_time', undefined),
+          result_count: _.get(esRes, 'body.docs.length'),
+          response_time: _.get(esRes, 'body.response_time', undefined),
           params: req.clean,
           retries: currentAttempt - 1
         };

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const es = require('elasticsearch');
+const es = require('@elastic/elasticsearch');
 const logger = require( 'pelias-logger' ).get( 'api' );
 const PeliasParameterError = require('../sanitizer/PeliasParameterError');
 const PeliasTimeoutError = require('../sanitizer/PeliasTimeoutError');
@@ -10,12 +10,14 @@ function isParameterError(error) {
 
 function isTimeoutError(error) {
   return error instanceof PeliasTimeoutError ||
-         error instanceof es.errors.RequestTimeout;
+         error instanceof es.errors.TimeoutError;
 }
 
 function isElasticsearchError(error) {
-  const knownErrors = [ es.errors.NoConnections,
-                        es.errors.ConnectionFault ];
+  // REVIEW: I've only guessed at the translation to the new library based on their name.
+  // REVIEW: Should we be using the base class ElasticsearchClientError instead?
+  const knownErrors = [ es.errors.NoLivingConnectionsError,
+                        es.errors.ConnectionError];
 
   return knownErrors.some(function(esError) {
     return error instanceof esError;

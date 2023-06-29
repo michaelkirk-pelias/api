@@ -5,16 +5,17 @@
 **/
 
 const _ = require('lodash');
-const es = require('elasticsearch');
+const es = require('@elastic/elasticsearch');
 const logger = require( 'pelias-logger' ).get( 'api' );
 
 function service( esclient, cmd, cb ){
 
   // query elasticsearch
   const startTime = new Date();
-  esclient.search( cmd, function( err, data ){
-    if (data) {
-      data.response_time = new Date() - startTime;
+  esclient.search( cmd, function( err, res){
+    if (res.body) {
+      // REVIEW: test this
+      res.body.response_time = new Date() - startTime;
     }
 
     // handle elasticsearch errors
@@ -28,8 +29,8 @@ function service( esclient, cmd, cb ){
     // these responses contain partially processed results and so should
     // be discarded.
     // https://github.com/pelias/api/issues/1384
-    if( _.get(data, 'timed_out', false) === true ){
-      const err = new es.errors.RequestTimeout('request timed_out=true');
+    if( _.get(res.body, 'timed_out', false) === true ){
+      const err = new es.errors.TimeoutError('request timed_out=true', res);
       logger.error( `elasticsearch error ${err}` );
       return cb( err );
     }
@@ -40,7 +41,7 @@ function service( esclient, cmd, cb ){
       scores: []
     };
 
-    const hits = _.get(data, 'hits.hits');
+    const hits = _.get(res.body, 'hits.hits');
     if( _.isArray( hits ) && hits.length > 0 ){
       docs = hits.map(hit => {
 
@@ -57,7 +58,7 @@ function service( esclient, cmd, cb ){
     }
 
     // fire callback
-    return cb( null, docs, meta, data );
+    return cb( null, docs, meta, res);
   });
 
 }

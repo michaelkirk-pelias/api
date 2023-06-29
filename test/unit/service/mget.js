@@ -45,7 +45,7 @@ module.exports.tests.error_conditions = (test, common) => {
         t.deepEquals(cmd, expectedCmd);
 
         const err = 'this is an error';
-        const data = {
+        const body = {
           docs: [
             {
               found: true,
@@ -55,7 +55,7 @@ module.exports.tests.error_conditions = (test, common) => {
           ]
         };
 
-        callback('this is an error', data);
+        callback('this is an error', { body });
 
       }
     };
@@ -101,7 +101,7 @@ module.exports.tests.success_conditions = (test, common) => {
       mget: (cmd, callback) => {
         t.deepEquals(cmd, expectedCmd);
 
-        const data = {
+        const body = {
           docs: [
             {
               found: true,
@@ -125,7 +125,7 @@ module.exports.tests.success_conditions = (test, common) => {
           ]
         };
 
-        callback(undefined, data);
+        callback(undefined, { body });
 
       }
     };
@@ -223,11 +223,11 @@ module.exports.tests.success_conditions = (test, common) => {
       mget: (cmd, callback) => {
         t.deepEquals(cmd, expectedCmd);
 
-        const data = {
+        const body = {
           docs: 'this isn\'t an array'
         };
 
-        callback(undefined, data);
+        callback(undefined, { body });
 
       }
     };

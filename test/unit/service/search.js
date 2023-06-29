@@ -1,5 +1,5 @@
 const proxyquire = require('proxyquire').noCallThru();
-const es = require('elasticsearch');
+const es = require('@elastic/elasticsearch');
 
 module.exports.tests = {};
 
@@ -39,14 +39,14 @@ module.exports.tests.error_conditions = (test, common) => {
       search: (cmd, callback) => {
         t.equals(cmd, 'this is the query');
         callback(null, {
-          timed_out : true,
+          body: { timed_out : true },
         });
       }
     };
 
     const next = (err, docs) => {
-      const expected = new es.errors.RequestTimeout('request timed_out=true');
-      t.deepEquals(err, expected);
+      t.ok(err instanceof es.errors.TimeoutError);
+      t.equals(err.message, 'request timed_out=true');
       t.equals(docs, undefined);
 
       t.ok(errorMessages.find((msg) => {
@@ -153,7 +153,7 @@ module.exports.tests.success_conditions = (test, common) => {
           }
         };
 
-        callback(undefined, data);
+        callback(undefined, { body: data });
 
       }
     };
